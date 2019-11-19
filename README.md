@@ -1,4 +1,4 @@
-# Astar
+# A*
 A web that visualize the A star algorithm.
 
 <h1>Button function</h1>
