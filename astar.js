@@ -398,7 +398,6 @@ class my_board
                     if(g_score[min_node["pt"].row][min_node["pt"].col] + min_node["pt"].l2dist(nbs[i])  < g_score[nbs[i].row][nbs[i].col])
                     {
                         parent[nbs[i].row][nbs[i].col] = min_node["pt"];
-                        
                         // console.log(nbs[i] + " => "+parent[nbs[i].row][nbs[i].col]);
                         
                         g_score[nbs[i].row][nbs[i].col] = g_score[min_node["pt"].row][min_node["pt"].col]+1;
