@@ -201,7 +201,11 @@ class my_board
                 bk_type = "START";
                 
                 if(this.start.length>0)
+                {
+                    this.bd_data[this.start[0].row][this.start[0].col] = 0;
                     this.paintBlock(this.start[0].row, this.start[0].col,"BLANK");
+                }
+                    
                 this.start = [];
                 this.start.push(new coord(row,col));
             }
@@ -212,7 +216,11 @@ class my_board
                 bk_type = "GOAL";
     
                 if(this.goal.length>0)
+                {
+                    this.bd_data[this.goal[0].row][this.goal[0].col] = 0;
                     this.paintBlock(this.goal[0].row, this.goal[0].col,"BLANK");
+                }
+                    
                 this.goal = [];
                 this.goal.push(new coord(row,col));
             }
@@ -271,7 +279,7 @@ class my_board
                 else if(this.bd_data[i][j]==4) // Walked
                     this.paintBlock(i, j, "WALKED");
                 else if(this.bd_data[i][j]==5) // In heap
-                    this.paintBlock(i, j, true,'#ffff00');
+                    this.paintBlock(i, j, "HEAP");
                 
             }
         }
@@ -279,9 +287,9 @@ class my_board
     clearBlock(row, col)
     {
         var context = this.canvas.getContext('2d');
-        // context.clearRect(col*this.block_w, row*this.block_h, this.block_w, this.block_h);
-        context.fillStyle = '#FFFFFF';
-        context.fillRect(col*this.block_w, row*this.block_h, this.block_w, this.block_h);
+        context.clearRect(col*this.block_w, row*this.block_h, this.block_w, this.block_h);
+        // context.fillStyle = "#FFFFFF";
+        // context.fillRect(col*this.block_w, row*this.block_h, this.block_w, this.block_h);
     }
     paintBlock(row, col, type="BLANK")
     {
@@ -300,7 +308,7 @@ class my_board
             this.clearBlock(row, col);
             context.beginPath();
             context.lineWidth = "1";
-            context.strokeStyle ='#00000';
+            context.strokeStyle ="#00000";
             context.rect(col*this.block_w, row*this.block_h , this.block_w, this.block_h);
             context.stroke();
         }
