@@ -187,20 +187,21 @@ class my_board
         if(this.bd_data[row][col]==0)
         {
             var bk_val = 0;
-            var bk_col = '#000000';
+            var bk_type = "BLOCK";
+            // console.log("MODE = "+this.mode);
             if(this.mode=="BLOCK")
             {
                 bk_val = 1;
-                bk_col = '#000000';
+                bk_type = "BLOCK";
             }
     
             if(this.mode=="START")
             {
                 bk_val = 2;
-                bk_col = '#00cc66';
+                bk_type = "START";
                 
                 if(this.start.length>0)
-                    this.clearBlock(this.start[0].row, this.start[0].col);
+                    this.paintBlock(this.start[0].row, this.start[0].col,"BLANK");
                 this.start = [];
                 this.start.push(new coord(row,col));
             }
@@ -208,16 +209,16 @@ class my_board
             if(this.mode=="GOAL")
             {
                 bk_val = 3;
-                bk_col = '#ff0000';
+                bk_type = "GOAL";
     
                 if(this.goal.length>0)
-                    this.clearBlock(this.goal[0].row, this.goal[0].col);
+                    this.paintBlock(this.goal[0].row, this.goal[0].col,"BLANK");
                 this.goal = [];
                 this.goal.push(new coord(row,col));
             }
 
             this.bd_data[row][col] = bk_val;
-            this.paintBlock(row,col,true,bk_col);
+            this.paintBlock(row,col,bk_type);
         }
         else
         {
@@ -230,7 +231,7 @@ class my_board
                 this.goal = [];
             }
             this.bd_data[row][col] = 0;
-            this.clearBlock(row, col); 
+            this.paintBlock(row,col,"BLANK");
         }
         
     }
@@ -262,15 +263,15 @@ class my_board
                 if(this.bd_data[i][j]==0)
                     this.paintBlock(i, j);
                 else if(this.bd_data[i][j]==1) // Block
-                    this.paintBlock(i, j, true);
+                    this.paintBlock(i, j,"BLOCK");
                 else if(this.bd_data[i][j]==2) // Start
-                    this.paintBlock(i, j, true,'#00cc66');
+                    this.paintBlock(i, j, "START");
                 else if(this.bd_data[i][j]==3) // Goal
-                    this.paintBlock(i, j, true,'#ff0000');
+                    this.paintBlock(i, j, "GOAL");
                 else if(this.bd_data[i][j]==4) // Walked
-                    this.paintBlock(i, j, true,'#ff9933');
-                // else if(this.bd_data[i][j]==5) // In heap
-                //     this.paintBlock(i, j, true,'#ffff00');
+                    this.paintBlock(i, j, "WALKED");
+                else if(this.bd_data[i][j]==5) // In heap
+                    this.paintBlock(i, j, true,'#ffff00');
                 
             }
         }
@@ -278,19 +279,25 @@ class my_board
     clearBlock(row, col)
     {
         var context = this.canvas.getContext('2d');
-        context.clearRect(col*this.block_w, row*this.block_h, this.block_w, this.block_h);
-        this.paintBlock(row,col); 
+        // context.clearRect(col*this.block_w, row*this.block_h, this.block_w, this.block_h);
+        context.fillStyle = '#FFFFFF';
+        context.fillRect(col*this.block_w, row*this.block_h, this.block_w, this.block_h);
     }
-    paintBlock(row, col,filled=false, colour='#00000')
+    paintBlock(row, col, type="BLANK")
     {
+        var ref_col = {"BLOCK":"#000000","BLANK":"#000000","START":"#00cc66","GOAL":"#ff0000","HEAP":"#ffff00","WALKED":"#ff9933"};
         var context = this.canvas.getContext('2d');
-        if(filled)
+        
+        if(type!="BLANK")
         {
-            context.fillStyle = colour;
+            this.clearBlock(row, col);
+            // console.log(ref_col[type]);
+            context.fillStyle = ref_col[type];
             context.fillRect(col*this.block_w, row*this.block_h, this.block_w, this.block_h);
         }
         else
         {
+            this.clearBlock(row, col);
             context.beginPath();
             context.lineWidth = "1";
             context.strokeStyle ='#00000';
@@ -301,6 +308,7 @@ class my_board
     setMode(mode)
     {
         var ref = ["GOAL","START","BLOCK"];
+        console.log(mode);
         if(ref.includes(mode))
             this.mode = mode;
     }
@@ -326,7 +334,12 @@ class my_board
             //Initialize parent
             var parent =new Array(this.rows);
             for(var i=0;i<this.rows;i++)
-                parent = new Array(this.cols).fill(new coord(0,0));
+            {
+                parent[i] = [];
+                for(var j=0;j<this.cols;j++)
+                    parent[i].push(new coord(0,0));
+            }
+                
 
             //Initialize G score
             var g_score =new Array(this.rows);
@@ -355,7 +368,7 @@ class my_board
             while(min_hp.content.length>0)
             {
                 var min_node = min_hp.pop();
-                console.log("POPPED = "+min_node);
+                console.log("POPPED = "+min_node["pt"]);
                 // If reached goal
                 if(min_node["pt"].row == this.goal[0].row && min_node["pt"].col == this.goal[0].col)
                 {
@@ -368,6 +381,9 @@ class my_board
                     if(g_score[min_node["pt"].row][min_node["pt"].col]+1 < g_score[nbs[i].row][nbs[i].col])
                     {
                         parent[nbs[i].row][nbs[i].col] = min_node["pt"];
+                        
+                        // console.log(nbs[i] + " => "+parent[nbs[i].row][nbs[i].col]);
+                        
                         g_score[nbs[i].row][nbs[i].col] = g_score[min_node["pt"].row][min_node["pt"].col]+1;
                         f_score[nbs[i].row][nbs[i].col] = g_score[nbs[i].row][nbs[i].col] + h_score[nbs[i].row][nbs[i].col];
 
@@ -378,7 +394,15 @@ class my_board
                     }
                 }
             }
-            console.log("A Star finished!");
+            var next_pt = parent[this.goal[0].row][this.goal[0].col];
+            
+            while( (next_pt.row==this.start[0].row && next_pt.col==this.start[0].col)==false)
+            {
+                console.log("WALKED = "+next_pt);
+                this.paintBlock(next_pt.row,next_pt.col,"WALKED");
+                next_pt = parent[next_pt.row][next_pt.col];
+            }
+            console.log("A* finished!");
         }
     }
 
@@ -397,7 +421,11 @@ class my_board
                 if(bk_val==0 || bk_val==3)
                 {
                     if((r_t==this.goal[0].row && c_t==this.goal[0].col)==false)
-                        this.paintBlock(r_t,c_t,true,'#ffff00');
+                    {
+                        this.paintBlock(r_t,c_t,"HEAP");
+                        
+                    }
+
                     result.push(new coord(r_t,c_t));
                 }
             }
