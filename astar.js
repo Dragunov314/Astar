@@ -327,6 +327,7 @@ class my_board
     }
     runAstar()
     {
+        this.RenderBoard();
         if(this.start.length>0 && this.goal.length>0)
         {
             this.start.forEach(val=>console.log("START = "+val));
