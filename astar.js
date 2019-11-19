@@ -23,8 +23,13 @@ blocks.push({
     width: 20,
     height: 20,
     top: 20,
-    left: 20,
-    border:1px
+    left: 20
 });
+
+// Render blocks
+blocks.forEach(function(element) {
+    context.fillStyle = element.colour;
+    context.rect(element.left, element.top, element.width, element.height);
+});​
 
 document.body.appendChild(mycanvas);
