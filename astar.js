@@ -145,6 +145,13 @@ class coord
         var c_dif = cd2.col-this.col;
         return Math.sqrt(r_dif*r_dif + c_dif*c_dif);
     }
+
+    l1dist(cd2)
+    {
+        var r_dif = Math.abs(cd2.row-this.row);
+        var c_dif = Math.abs(cd2.col-this.col);
+        return r_dif+c_dif;
+    }
     
     toString()
     {
@@ -388,7 +395,7 @@ class my_board
 
                 for(var i=0;i<nbs.length;i++)
                 {
-                    if(g_score[min_node["pt"].row][min_node["pt"].col]+1 < g_score[nbs[i].row][nbs[i].col])
+                    if(g_score[min_node["pt"].row][min_node["pt"].col] + min_node["pt"].l2dist(nbs[i])  < g_score[nbs[i].row][nbs[i].col])
                     {
                         parent[nbs[i].row][nbs[i].col] = min_node["pt"];
                         
@@ -405,14 +412,17 @@ class my_board
                 }
             }
             var next_pt = parent[this.goal[0].row][this.goal[0].col];
-            this.shortest_dist = 1;
+            this.shortest_dist = next_pt.l2dist(this.goal[0]);
             while( (next_pt.row==this.start[0].row && next_pt.col==this.start[0].col)==false)
             {
                 console.log("WALKED = "+next_pt);
                 this.paintBlock(next_pt.row,next_pt.col,"WALKED");
+                this.shortest_dist += next_pt.l2dist(parent[next_pt.row][next_pt.col]);
                 next_pt = parent[next_pt.row][next_pt.col];
-                this.shortest_dist++;
+                
             }
+            //Rounding
+            this.shortest_dist = Math.round(this.shortest_dist*1000)/1000;
             console.log("A* finished!");
         }
     }
@@ -420,8 +430,8 @@ class my_board
     getNeighbors(pt)
     {
         var result = [];
-        const row_dif = [1,-1,0,0];
-        const col_dif = [0,0,1,-1];
+        const row_dif = [1,-1,0,0,1,1,-1,-1];
+        const col_dif = [0,0,1,-1,1,-1,1,-1];
         for(var i=0;i<row_dif.length;i++)
         {
             var r_t = pt.row + row_dif[i];
