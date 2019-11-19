@@ -453,6 +453,12 @@ class grid_panel
         this.div_grid = document.createElement("div");
         this.div_grid.appendChild(this.bd1.canvas);
 
+        this.div_grid.appendChild(document.createElement("br"));
+        var github_link = document.createElement("a");
+        github_link.setAttribute("href","https://github.com/Dragunov314/Astar");
+        github_link.appendChild(document.createTextNode("Source Code"));
+        this.div_grid.appendChild(github_link);
+
         var div_button = document.createElement("div");
         this.buttons = [];
 
