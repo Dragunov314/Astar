@@ -405,12 +405,13 @@ class my_board
                 }
             }
             var next_pt = parent[this.goal[0].row][this.goal[0].col];
-            
+            this.shortest_dist = 1;
             while( (next_pt.row==this.start[0].row && next_pt.col==this.start[0].col)==false)
             {
                 console.log("WALKED = "+next_pt);
                 this.paintBlock(next_pt.row,next_pt.col,"WALKED");
                 next_pt = parent[next_pt.row][next_pt.col];
+                this.shortest_dist++;
             }
             console.log("A* finished!");
         }
@@ -487,12 +488,20 @@ class grid_panel
         bt_clear.addEventListener("click", this.clearBt);
         this.buttons.push(bt_clear);
         
-        // Add all buttons to division
+        
         var title = document.createElement("h1");
         title.appendChild(document.createTextNode("A* ALGORITHM VISUALIZATION"));
         div_button.appendChild(title);
         div_button.appendChild(document.createElement("br"));
+        // Add all buttons to division
         this.buttons.forEach(function(element){element.setAttribute("class","button");div_button.appendChild(element);});
+        div_button.appendChild(document.createElement("br"));
+        // Add display text to button division
+        var display = document.createElement("p");
+        display.setAttribute("id","display_text");
+        display.innerHTML = "Shortest distance : ";
+        div_button.appendChild(display);
+
         this.div_button = div_button;
         this.div_button.setAttribute("align","center");
         this.div_grid.setAttribute("align","center");
@@ -500,11 +509,11 @@ class grid_panel
         
         
         document.body.appendChild(this.div_button);
-        document.body.appendChild(document.createElement("br"));
+        // document.body.appendChild(document.createElement("br"));
         document.body.appendChild(this.div_grid);
     }
 
-    runAstar = e =>{this.bd1.runAstar();}
+    runAstar = e =>{this.bd1.runAstar();document.getElementById("display_text").innerHTML="Shortest distance : "+this.bd1.shortest_dist;}
     clearBt = e =>{this.bd1.clearBoard();}
     setStart = e =>{this.bd1.mode = "START";}
     setGoal = e =>{this.bd1.mode = "GOAL";}
