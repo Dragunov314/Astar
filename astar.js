@@ -1,3 +1,136 @@
+function BinaryHeap(scoreFunction){
+        this.content = [];
+        this.scoreFunction = scoreFunction;
+}
+  
+BinaryHeap.prototype = {
+    includes: function(node)
+    {
+        for (var i = 0; i < this.content.length; i++) 
+        {
+            if ( this.isEquivalent(this.content[i], node))
+            {
+                return true;
+            }
+        }
+        return false;
+    },
+    isEquivalent: function (a, b) {
+        if(a["pt"].row==b["pt"].row && a["pt"].col==b["pt"].col)
+        {
+            return true;
+        }
+        else
+            return false;
+    },
+
+    push: function(element) {
+        // Add the new element to the end of the array.
+        this.content.push(element);
+        // Allow it to bubble up.
+        this.bubbleUp(this.content.length - 1);
+    },
+  
+    pop: function() {
+        // Store the first element so we can return it later.
+        var result = this.content[0];
+        // Get the element at the end of the array.
+        var end = this.content.pop();
+        // If there are any elements left, put the end element at the
+        // start, and let it sink down.
+        if (this.content.length > 0) {
+            this.content[0] = end;
+            this.sinkDown(0);
+        }
+        return result;
+    },
+  
+    remove: function(node) {
+        var length = this.content.length;
+        // To remove a value, we must search through the array to find
+        // it.
+        for (var i = 0; i < length; i++) {
+            if ( this.isEquivalent(this.content[i], node)==false) continue;
+            // When it is found, the process seen in 'pop' is repeated
+            // to fill up the hole.
+            var end = this.content.pop();
+            // If the element we popped was the one we needed to remove,
+            // we're done.
+            if (i == length - 1) break;
+            // Otherwise, we replace the removed element with the popped
+            // one, and allow it to float up or sink down as appropriate.
+            this.content[i] = end;
+            this.bubbleUp(i);
+            this.sinkDown(i);
+            break;
+        }
+    },
+  
+    size: function() {
+        return this.content.length;
+    },
+  
+    bubbleUp: function(n) {
+        // Fetch the element that has to be moved.
+        var element = this.content[n], score = this.scoreFunction(element);
+        // When at 0, an element can not go up any further.
+        while (n > 0) {
+            // Compute the parent element's index, and fetch it.
+            var parentN = Math.floor((n + 1) / 2) - 1,
+            parent = this.content[parentN];
+            // If the parent has a lesser score, things are in order and we
+            // are done.
+            if (score >= this.scoreFunction(parent))
+            break;
+    
+            // Otherwise, swap the parent with the current element and
+            // continue.
+            this.content[parentN] = element;
+            this.content[n] = parent;
+            n = parentN;
+        }
+    },
+  
+    sinkDown: function(n) {
+        // Look up the target element and its score.
+        var length = this.content.length,
+        element = this.content[n],
+        elemScore = this.scoreFunction(element);
+    
+        while(true) {
+            // Compute the indices of the child elements.
+            var child2N = (n + 1) * 2, child1N = child2N - 1;
+            // This is used to store the new position of the element,
+            // if any.
+            var swap = null;
+            // If the first child exists (is inside the array)...
+            if (child1N < length) {
+            // Look it up and compute its score.
+            var child1 = this.content[child1N],
+            child1Score = this.scoreFunction(child1);
+            // If the score is less than our element's, we need to swap.
+            if (child1Score < elemScore)
+                swap = child1N;
+            }
+            // Do the same checks for the other child.
+            if (child2N < length) {
+            var child2 = this.content[child2N],
+            child2Score = this.scoreFunction(child2);
+            if (child2Score < (swap == null ? elemScore : child1Score))
+                swap = child2N;
+            }
+    
+            // No need to swap further, we are done.
+            if (swap == null) break;
+    
+            // Otherwise, swap and continue.
+            this.content[n] = this.content[swap];
+            this.content[swap] = element;
+            n = swap;
+        }
+    }
+  };
+
 class coord
 {
     constructor(row, col)
@@ -11,6 +144,11 @@ class coord
         var r_dif = cd2.row-this.row;
         var c_dif = cd2.col-this.col;
         return r_dif*r_dif + c_dif*c_dif;
+    }
+    
+    toString()
+    {
+        return "("+this.row+","+this.col+")";
     }
 }
 
@@ -123,8 +261,17 @@ class my_board
             {
                 if(this.bd_data[i][j]==0)
                     this.paintBlock(i, j);
-                else if(this.bd_data[i][j]==1)
+                else if(this.bd_data[i][j]==1) // Block
                     this.paintBlock(i, j, true);
+                else if(this.bd_data[i][j]==2) // Start
+                    this.paintBlock(i, j, true,'#00cc66');
+                else if(this.bd_data[i][j]==3) // Goal
+                    this.paintBlock(i, j, true,'#ff0000');
+                else if(this.bd_data[i][j]==4) // Walked
+                    this.paintBlock(i, j, true,'#ff9933');
+                // else if(this.bd_data[i][j]==5) // In heap
+                //     this.paintBlock(i, j, true,'#ffff00');
+                
             }
         }
     }
@@ -166,14 +313,97 @@ class my_board
                 this.bd_data[i][j]=0;
             }
         }
+        this.start=[];
+        this.goal=[];
         this.RenderBoard();
     }
     runAstar()
     {
         if(this.start.length>0 && this.goal.length>0)
         {
+            this.start.forEach(val=>console.log("START = "+val));
+            this.goal.forEach(val=>console.log("GOAL = "+val));
+            //Initialize parent
+            var parent =new Array(this.rows);
+            for(var i=0;i<this.rows;i++)
+                parent = new Array(this.cols).fill(new coord(0,0));
 
+            //Initialize G score
+            var g_score =new Array(this.rows);
+            for(var i=0;i<this.rows;i++)
+                g_score[i] = new Array(this.cols).fill(Number.MAX_SAFE_INTEGER);
+            g_score[this.start[0].row][this.start[0].col] = 0;
+
+            //Initialize H score
+            var h_score =new Array(this.rows);
+            for(var i=0;i<this.rows;i++)
+                h_score[i] = new Array(this.cols).fill(0);
+            
+            for(var i=0;i<this.rows;i++)
+                for(var j=0;j<this.cols;j++)
+                    h_score[i][j] = this.goal[0].l2dist(new coord(i,j));
+                
+            //Initialize F score
+            var f_score =new Array(this.rows);
+            for(var i=0;i<this.rows;i++)
+                f_score[i] = new Array(this.cols).fill(Number.MAX_SAFE_INTEGER);
+            f_score[this.start[0].row][this.start[0].col] = h_score[this.start[0].row][this.start[0].col];
+
+            var min_hp = new BinaryHeap(function(x){return x["key"];});
+            min_hp.push({"pt": this.start[0],"key":f_score[this.start[0].row][this.start[0].col]});
+
+            while(min_hp.content.length>0)
+            {
+                var min_node = min_hp.pop();
+                console.log("POPPED = "+min_node);
+                // If reached goal
+                if(min_node["pt"].row == this.goal[0].row && min_node["pt"].col == this.goal[0].col)
+                {
+                    break;
+                }
+                var nbs = this.getNeighbors(min_node["pt"]);
+
+                for(var i=0;i<nbs.length;i++)
+                {
+                    if(g_score[min_node["pt"].row][min_node["pt"].col]+1 < g_score[nbs[i].row][nbs[i].col])
+                    {
+                        parent[nbs[i].row][nbs[i].col] = min_node["pt"];
+                        g_score[nbs[i].row][nbs[i].col] = g_score[min_node["pt"].row][min_node["pt"].col]+1;
+                        f_score[nbs[i].row][nbs[i].col] = g_score[nbs[i].row][nbs[i].col] + h_score[nbs[i].row][nbs[i].col];
+
+                        var heap_node = {"pt":nbs[i],"key":f_score[nbs[i].row][nbs[i].col]};
+                        if(min_hp.includes(heap_node))
+                            min_hp.remove(heap_node);
+                        min_hp.push(heap_node);
+                    }
+                }
+            }
+            console.log("A Star finished!");
         }
+    }
+
+    getNeighbors(pt)
+    {
+        var result = [];
+        const row_dif = [1,-1,0,0];
+        const col_dif = [0,0,1,-1];
+        for(var i=0;i<row_dif.length;i++)
+        {
+            var r_t = pt.row + row_dif[i];
+            var c_t = pt.col + col_dif[i];
+            if(r_t>=0 && c_t>=0 && r_t < this.rows && c_t < this.cols)
+            {
+                var bk_val = this.bd_data[r_t][c_t];
+                if(bk_val==0 || bk_val==3)
+                {
+                    if((r_t==this.goal[0].row && c_t==this.goal[0].col)==false)
+                        this.paintBlock(r_t,c_t,true,'#ffff00');
+                    result.push(new coord(r_t,c_t));
+                }
+            }
+        }
+
+        return result;
     }
 }
 
@@ -203,6 +433,11 @@ class grid_panel
         bt_setBlock.addEventListener("click", this.setBlock);
         this.buttons.push(bt_setBlock);
 
+        var bt_runAstar = document.createElement("button");
+        bt_runAstar.appendChild(document.createTextNode("Run A*"));
+        bt_runAstar.addEventListener("click", this.runAstar);
+        this.buttons.push(bt_runAstar);
+
         var bt_clear = document.createElement("button");
         bt_clear.appendChild(document.createTextNode("Clear"));
         bt_clear.addEventListener("click", this.clearBt);
@@ -216,6 +451,7 @@ class grid_panel
         document.body.appendChild(this.div_grid);
     }
 
+    runAstar = e =>{this.bd1.runAstar();}
     clearBt = e =>{this.bd1.clearBoard();}
     setStart = e =>{this.bd1.mode = "START";}
     setGoal = e =>{this.bd1.mode = "GOAL";}
@@ -223,3 +459,16 @@ class grid_panel
 }
 
 gd1 = new grid_panel();
+// test = [{"pt":new coord(3,1),"key":4},{"pt":new coord(3,2),"key":9},{"pt":new coord(3,3),"key":8},{"pt":new coord(3,4),"key":7},{"pt":new coord(9,1),"key":3}]
+// var hp = new BinaryHeap(function(x){return x["key"];});
+
+// test.forEach(val => {hp.push(val)});
+
+// hp.remove({"pt":new coord(3,4),"key":0});
+// hp.push({"pt":new coord(3,4),"key":12});
+// while (hp.size() > 0)
+// {
+//     min_val = hp.pop();
+//     console.log(min_val);
+    
+// }
