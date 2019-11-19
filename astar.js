@@ -413,14 +413,22 @@ class my_board
             }
             var next_pt = parent[this.goal[0].row][this.goal[0].col];
             this.shortest_dist = next_pt.l2dist(this.goal[0]);
-            while( (next_pt.row==this.start[0].row && next_pt.col==this.start[0].col)==false)
+            if(this.shortest_dist<2)
             {
-                console.log("WALKED = "+next_pt);
-                this.paintBlock(next_pt.row,next_pt.col,"WALKED");
-                this.shortest_dist += next_pt.l2dist(parent[next_pt.row][next_pt.col]);
-                next_pt = parent[next_pt.row][next_pt.col];
-                
+                while( (next_pt.row==this.start[0].row && next_pt.col==this.start[0].col)==false)
+                {
+                    console.log("WALKED = "+next_pt);
+                    this.paintBlock(next_pt.row,next_pt.col,"WALKED");
+                    this.shortest_dist += next_pt.l2dist(parent[next_pt.row][next_pt.col]);
+                    next_pt = parent[next_pt.row][next_pt.col];
+                    
+                }
             }
+            else
+            {
+                this.shortest_dist = -1;
+            }
+            
             //Rounding
             this.shortest_dist = Math.round(this.shortest_dist*1000)/1000;
             console.log("A* finished!");
