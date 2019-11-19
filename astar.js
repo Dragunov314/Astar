@@ -1,7 +1,3 @@
-
-
-
-
 class my_board
 {
     constructor(rows=30, cols=30, bd_height=600, bd_width=600)
