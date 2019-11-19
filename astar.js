@@ -1,3 +1,19 @@
+class coord
+{
+    constructor(row, col)
+    {
+        this.row = row;
+        this.col = col;
+    }
+
+    l2dist(cd2)
+    {
+        var r_dif = cd2.row-this.row;
+        var c_dif = cd2.col-this.col;
+        return r_dif*r_dif + c_dif*c_dif;
+    }
+}
+
 class my_board
 {
     constructor(rows=30, cols=30, bd_height=600, bd_width=600)
@@ -46,8 +62,9 @@ class my_board
                 bk_col = '#00cc66';
                 
                 if(this.start.length>0)
-                    this.clearBlock(this.start[0], this.start[1]);
-                this.start = [row,col];
+                    this.clearBlock(this.start[0].row, this.start[0].col);
+                this.start = [];
+                this.start.push(new coord(row,col));
             }
     
             if(this.mode=="GOAL")
@@ -56,8 +73,9 @@ class my_board
                 bk_col = '#ff0000';
     
                 if(this.goal.length>0)
-                    this.clearBlock(this.goal[0], this.goal[1]);
-                this.goal = [row,col];
+                    this.clearBlock(this.goal[0].row, this.goal[0].col);
+                this.goal = [];
+                this.goal.push(new coord(row,col));
             }
 
             this.bd_data[row][col] = bk_val;
