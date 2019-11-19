@@ -143,7 +143,7 @@ class coord
     {
         var r_dif = cd2.row-this.row;
         var c_dif = cd2.col-this.col;
-        return r_dif*r_dif + c_dif*c_dif;
+        return Math.sqrt(r_dif*r_dif + c_dif*c_dif);
     }
     
     toString()
