@@ -165,6 +165,7 @@ class my_board
         this.mode = "BLOCK"; //"GOAL", "BLOCK", "START"
         this.start = [];
         this.goal = [];
+        this.border_color = "#000000";
         
         this.bd_data = new Array(rows);
         for(var i=0;i<cols;i++)
@@ -249,7 +250,7 @@ class my_board
         var mycanvas = document.createElement("canvas");
         mycanvas.setAttribute("width", this.bd_width.toString());
         mycanvas.setAttribute("height",this.bd_height.toString() );
-        mycanvas.setAttribute("style","border:1px solid #000000;");
+        mycanvas.setAttribute("style","border:0px solid #000000;");
         mycanvas.appendChild(document.createTextNode("Your browser does not support the canvas element."));
 
         this.canvas = mycanvas;
@@ -293,7 +294,7 @@ class my_board
     }
     paintBlock(row, col, type="BLANK")
     {
-        var ref_col = {"BLOCK":"#000000","BLANK":"#000000","START":"#00cc66","GOAL":"#ff0000","HEAP":"#ffff00","WALKED":"#ff9933"};
+        var ref_col = {"BLOCK":this.border_color,"BLANK":"#000000","START":"#00cc66","GOAL":"#ff0000","HEAP":"#ffff00","WALKED":"#ff9933"};
         var context = this.canvas.getContext('2d');
         
         if(type!="BLANK")
@@ -308,7 +309,7 @@ class my_board
             this.clearBlock(row, col);
             context.beginPath();
             context.lineWidth = "1";
-            context.strokeStyle ="#00000";
+            context.strokeStyle =this.border_color;
             context.rect(col*this.block_w, row*this.block_h , this.block_w, this.block_h);
             context.stroke();
         }
@@ -481,10 +482,19 @@ class grid_panel
         this.buttons.push(bt_clear);
         
         // Add all buttons to division
-        this.buttons.forEach(function(element){div_button.appendChild(element);});
+        var title = document.createElement("h1");
+        title.appendChild(document.createTextNode("A* ALGORITHM VISUALIZATION"));
+        div_button.appendChild(title);
+        div_button.appendChild(document.createElement("br"));
+        this.buttons.forEach(function(element){element.setAttribute("class","button");div_button.appendChild(element);});
         this.div_button = div_button;
+        this.div_button.setAttribute("align","center");
+        this.div_grid.setAttribute("align","center");
 
+        
+        
         document.body.appendChild(this.div_button);
+        document.body.appendChild(document.createElement("br"));
         document.body.appendChild(this.div_grid);
     }
 
@@ -496,6 +506,8 @@ class grid_panel
 }
 
 gd1 = new grid_panel();
+document.title = "A* ALGORITHM VISUALIZATION";
+document.body.style.backgroundColor = "#b3f0ff";
 // test = [{"pt":new coord(3,1),"key":4},{"pt":new coord(3,2),"key":9},{"pt":new coord(3,3),"key":8},{"pt":new coord(3,4),"key":7},{"pt":new coord(9,1),"key":3}]
 // var hp = new BinaryHeap(function(x){return x["key"];});
 
