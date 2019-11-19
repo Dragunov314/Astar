@@ -400,7 +400,7 @@ class my_board
                         parent[nbs[i].row][nbs[i].col] = min_node["pt"];
                         // console.log(nbs[i] + " => "+parent[nbs[i].row][nbs[i].col]);
                         
-                        g_score[nbs[i].row][nbs[i].col] = g_score[min_node["pt"].row][min_node["pt"].col]+1;
+                        g_score[nbs[i].row][nbs[i].col] = g_score[min_node["pt"].row][min_node["pt"].col]+ min_node["pt"].l2dist(nbs[i]);
                         f_score[nbs[i].row][nbs[i].col] = g_score[nbs[i].row][nbs[i].col] + h_score[nbs[i].row][nbs[i].col];
 
                         var heap_node = {"pt":nbs[i],"key":f_score[nbs[i].row][nbs[i].col]};
