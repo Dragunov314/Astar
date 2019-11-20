@@ -1,3 +1,12 @@
+function sleep(milliseconds) {
+    var start = new Date().getTime();
+    for (var i = 0; i < 1e7; i++) {
+        if ((new Date().getTime() - start) > milliseconds){
+            break;
+        }
+    }
+}
+
 function BinaryHeap(scoreFunction){
         this.content = [];
         this.scoreFunction = scoreFunction;
@@ -466,6 +475,7 @@ class my_board
                             min_hp.remove(heap_node);
                         min_hp.push(heap_node);
                     }
+                    
                 }
             }
             var next_pt = parent[this.goal[0].row][this.goal[0].col];
