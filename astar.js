@@ -161,7 +161,7 @@ class coord
 
 class my_board
 {
-    constructor(rows=30, cols=30, bd_height=600, bd_width=600)
+    constructor(rows=35, cols=60, bd_height=700, bd_width=1200)
     {
         this.rows = rows;
         this.cols = cols;
