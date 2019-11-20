@@ -577,19 +577,19 @@ class grid_panel
     }
 
     runAstar = e =>{
-        this.resetButtonColor();
+        // this.resetButtonColor();
         this.bd1.runAstar();
         document.getElementById("display_text").innerHTML="Shortest distance : "+this.bd1.shortest_dist;
     }
     clearAll = e =>{
         this.bd1.clearBoard();
-        this.resetButtonColor();
-        document.getElementById("display_text").innerHTML="";
+        // this.resetButtonColor();
+        // document.getElementById("display_text").innerHTML="";
     }
     clearBlocks = e =>{
         this.bd1.clearAllBlocks();
-        this.resetButtonColor();
-        document.getElementById("display_text").innerHTML="";
+        // this.resetButtonColor();
+        // document.getElementById("display_text").innerHTML="";
     }
     setStart = e =>{
         this.bd1.mode = "START";
@@ -600,7 +600,6 @@ class grid_panel
     setGoal = e =>{
         this.bd1.mode = "GOAL";
         this.resetButtonColor();
-        // e.srcElement.style.backgroundColor = "red";
         e.srcElement.classList.add("goalButton");
         document.getElementById("display_text").innerHTML="LEFT CLICK to set a goal point. LEFT CLICK again to clear the goal point.";
     }
