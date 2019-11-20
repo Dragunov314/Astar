@@ -173,6 +173,7 @@ class my_board
         this.start = [];
         this.goal = [];
         this.border_color = "#000000";
+        this.drag_block = "BLOCK_NONE";
         
         this.bd_data = new Array(rows);
         for(var i=0;i<cols;i++)
@@ -184,6 +185,8 @@ class my_board
     }
 
     clickEvent = event =>  {
+        if(this.mode=="BLOCK")
+            return;
         var x = event.pageX - this.canvas.offsetLeft;
         var y = event.pageY - this.canvas.offsetTop;
 
@@ -196,12 +199,6 @@ class my_board
         {
             var bk_val = 0;
             var bk_type = "BLOCK";
-            // console.log("MODE = "+this.mode);
-            if(this.mode=="BLOCK")
-            {
-                bk_val = 1;
-                bk_type = "BLOCK";
-            }
     
             if(this.mode=="START")
             {
@@ -236,7 +233,7 @@ class my_board
             this.bd_data[row][col] = bk_val;
             this.paintBlock(row,col,bk_type);
         }
-        else
+        else if(this.bd_data[row][col]==2 || this.bd_data[row][col]==3)
         {
             if(this.bd_data[row][col]==2)
             {
@@ -251,6 +248,49 @@ class my_board
         }
         
     }
+    mouseDownEvent = e =>{
+        if(this.mode=="BLOCK")
+        {
+            if(e.button == 0)
+                this.drag_block = "BLOCK_SET";
+            if(e.button == 2)
+                this.drag_block = "BLOCK_CLEAR";
+            this.mouseMoveEvent(e)
+        }
+    }
+
+    mouseMoveEvent = e =>{
+        var x = event.pageX - this.canvas.offsetLeft;
+        var y = event.pageY - this.canvas.offsetTop;
+
+        var col = Math.floor(x/this.block_w);
+        var row = Math.floor(y/this.block_h);
+
+        if(this.drag_block == "BLOCK_SET")
+        {
+            if(this.bd_data[row][col] ==0)
+            {
+                this.bd_data[row][col] = 1;
+                this.paintBlock(row,col,"BLOCK");
+            }
+        }
+
+        if(this.drag_block == "BLOCK_CLEAR")
+        {
+            if(this.bd_data[row][col] = 1)
+            {
+                this.bd_data[row][col] = 0;
+            this.paintBlock(row,col,"BLANK");
+            }
+        }
+    }
+
+    mouseUpEvent = e =>{
+        if(this.mode=="BLOCK")
+        {
+            this.drag_block = "BLOCK_NONE";
+        }
+    }
 
     AddCanvas()
     {
@@ -264,6 +304,9 @@ class my_board
 
         // Add event listener for `click` events.
         mycanvas.addEventListener('click', this.clickEvent, false);
+        mycanvas.addEventListener('mousedown', this.mouseDownEvent, false);
+        mycanvas.addEventListener('mouseup', this.mouseUpEvent, false);
+        mycanvas.addEventListener('mousemove', this.mouseMoveEvent, false);
         // document.body.appendChild(mycanvas);
     }
 
@@ -328,6 +371,20 @@ class my_board
         if(ref.includes(mode))
             this.mode = mode;
     }
+    clearAllBlocks()
+    {
+        for(var i=0;i<this.rows;i++)
+        {
+            for(var j=0;j<this.cols;j++)
+            {
+                if(this.bd_data[i][j]==1)
+                {
+                    this.bd_data[i][j]=0;
+                }
+            }
+        }
+        this.RenderBoard();
+    }
     clearBoard()
     {
         for(var i=0;i<this.rows;i++)
@@ -344,6 +401,7 @@ class my_board
     runAstar()
     {
         this.RenderBoard();
+        this.shortest_dist = -1;
         if(this.start.length>0 && this.goal.length>0)
         {
             this.start.forEach(val=>console.log("START = "+val));
@@ -467,50 +525,38 @@ class grid_panel
 {
     constructor()
     {
+        // Create divs
         this.bd1 = new my_board();
         this.div_grid = document.createElement("div");
         this.div_grid.appendChild(this.bd1.canvas);
+        var div_button = document.createElement("div");
 
+        // Set Title
+        var title = document.createElement("h1");
+        title.appendChild(document.createTextNode("A* ALGORITHM VISUALIZATION"));
+        div_button.appendChild(title);
+        div_button.appendChild(document.createElement("br"));
+
+        // Add Footer
         this.div_grid.appendChild(document.createElement("br"));
         var github_link = document.createElement("a");
         github_link.setAttribute("href","https://github.com/Dragunov314/Astar");
         github_link.appendChild(document.createTextNode("Source Code"));
         this.div_grid.appendChild(github_link);
-
-        var div_button = document.createElement("div");
+        
+        // Create buttons and add all buttons to division
         this.buttons = [];
-
-        var bt_setStart = document.createElement("button");
-        bt_setStart.appendChild(document.createTextNode("Set Start"));
-        bt_setStart.addEventListener("click", this.setStart);
-        this.buttons.push(bt_setStart);
-
-        var bt_setGoal = document.createElement("button");
-        bt_setGoal.appendChild(document.createTextNode("Set Goal"));
-        bt_setGoal.addEventListener("click", this.setGoal);
-        this.buttons.push(bt_setGoal);
-
-        var bt_setBlock = document.createElement("button");
-        bt_setBlock.appendChild(document.createTextNode("Set Block"));
-        bt_setBlock.addEventListener("click", this.setBlock);
-        this.buttons.push(bt_setBlock);
-
-        var bt_runAstar = document.createElement("button");
-        bt_runAstar.appendChild(document.createTextNode("Run A*"));
-        bt_runAstar.addEventListener("click", this.runAstar);
-        this.buttons.push(bt_runAstar);
-
-        var bt_clear = document.createElement("button");
-        bt_clear.appendChild(document.createTextNode("Clear"));
-        bt_clear.addEventListener("click", this.clearBt);
-        this.buttons.push(bt_clear);
+        var bt_click_funcs = [this.setStart, this.setGoal, this.setBlock, this.runAstar, this.clearBlocks, this.clearAll];
+        var bt_text = ["Set Start","Set Goal","Set Block","Run A*","Clear Blocks","Clear All"];
         
+        for(var i=0;i<bt_text.length;i++)
+        {
+            var tmp_bt = document.createElement("button");
+            tmp_bt.appendChild(document.createTextNode(bt_text[i]));
+            tmp_bt.addEventListener("click", bt_click_funcs[i]);
+            this.buttons.push(tmp_bt);
+        }
         
-        var title = document.createElement("h1");
-        title.appendChild(document.createTextNode("A* ALGORITHM VISUALIZATION"));
-        div_button.appendChild(title);
-        div_button.appendChild(document.createElement("br"));
-        // Add all buttons to division
         this.buttons.forEach(function(element){element.setAttribute("class","button");div_button.appendChild(element);});
         div_button.appendChild(document.createElement("br"));
         // Add display text to button division
@@ -523,18 +569,52 @@ class grid_panel
         this.div_button.setAttribute("align","center");
         this.div_grid.setAttribute("align","center");
 
-        
-        
         document.body.appendChild(this.div_button);
         // document.body.appendChild(document.createElement("br"));
         document.body.appendChild(this.div_grid);
+
+        this.buttons[2].click();
     }
 
-    runAstar = e =>{this.bd1.runAstar();document.getElementById("display_text").innerHTML="Shortest distance : "+this.bd1.shortest_dist;}
-    clearBt = e =>{this.bd1.clearBoard();}
-    setStart = e =>{this.bd1.mode = "START";}
-    setGoal = e =>{this.bd1.mode = "GOAL";}
-    setBlock = e =>{this.bd1.mode = "BLOCK";}
+    runAstar = e =>{
+        this.resetButtonColor();
+        this.bd1.runAstar();
+        document.getElementById("display_text").innerHTML="Shortest distance : "+this.bd1.shortest_dist;
+    }
+    clearAll = e =>{
+        this.bd1.clearBoard();
+        this.resetButtonColor();
+        document.getElementById("display_text").innerHTML="";
+    }
+    clearBlocks = e =>{
+        this.bd1.clearAllBlocks();
+        this.resetButtonColor();
+        document.getElementById("display_text").innerHTML="";
+    }
+    setStart = e =>{
+        this.bd1.mode = "START";
+        this.resetButtonColor();
+        e.srcElement.classList.add("startButton");
+        document.getElementById("display_text").innerHTML="LEFT CLICK to set a start point. LEFT CLICK again to clear the start point.";
+    }
+    setGoal = e =>{
+        this.bd1.mode = "GOAL";
+        this.resetButtonColor();
+        // e.srcElement.style.backgroundColor = "red";
+        e.srcElement.classList.add("goalButton");
+        document.getElementById("display_text").innerHTML="LEFT CLICK to set a goal point. LEFT CLICK again to clear the goal point.";
+    }
+    setBlock = e =>{
+        this.bd1.mode = "BLOCK"; 
+        document.getElementById("display_text").innerHTML="LEFT CLICK and drag to set blocks. RIGHT CLICK and drag to clear blocks."
+        this.resetButtonColor();
+        e.srcElement.classList.add("blockButton");
+    }
+
+    resetButtonColor()
+    {
+        this.buttons.forEach(bt => {bt.setAttribute("class","button");});
+    }
 }
 
 gd1 = new grid_panel();
